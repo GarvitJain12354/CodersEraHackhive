@@ -161,88 +161,103 @@ exports.uploadCsv = CatchAsyncErrors(async (req, res, next) => {
 
 exports.getDevice = CatchAsyncErrors(async (req, res, next) => {
   try {
-      const vichel = await Vichel.findOne({ deviceId });
-      const deviceId = vichel.deviceId; 
+      // const deviceId = req.params.id; // Update deviceId as needed
+      // const vichel = await Vichel.findById(deviceId);
 
-      if (!vichel) {
-          return res.status(404).json({ error: "Device not found" });
-      }
+      // if (!vichel) {
+      //     return res.status(404).json({ error: "Device not found" });
+      // }
 
+      // // Check if data field exists and has at least one entry
+      // if (!vichel.data || vichel.data.length === 0) {
+      //     return res.status(404).json({ error: "Data not found for the device" });
+      // }
 
-      vichel.data.sort((a, b) => a._id.localeCompare(b._id));
+      // // Check if _id field is defined in at least one entry
+      // const hasIdField = vichel.data.some(entry => entry._id !== undefined);
 
-      const coordinates = vichel.data.map(entry => [parseFloat(entry.Latitude), parseFloat(entry.Longitude)]);
+      // if (hasIdField) {
+      //     // Sort data array based on _id field
+      //     vichel.data.sort((a, b) => (a._id || '').localeCompare(b._id || ''));
+      // } else {
+      //     // Sort data array based on another field or skip sorting
+      //     // Example: vichel.data.sort((a, b) => a.UTC - b.UTC);
+      // }
 
-      // TSP Calculation Logic
-      function calculateDistance(lat1, lon1, lat2, lon2) {
-          const R = 6371; 
-          const dLat = toRadians(lat2 - lat1);
-          const dLon = toRadians(lon2 - lon1);
-          const a =
-              Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-              Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
-              Math.sin(dLon / 2) * Math.sin(dLon / 2);
-          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-          const distance = R * c;
-          return distance;
-      }
+      // // Extract coordinates from data field
+      // const coordinates = vichel.data.map(entry => [parseFloat(entry.Latitude), parseFloat(entry.Longitude)]);
 
-      function toRadians(degrees) {
-          return degrees * (Math.PI / 180);
-      }
+      // // TSP Calculation Logic
+      // function calculateDistance(lat1, lon1, lat2, lon2) {
+      //     const R = 6371; // Radius of the Earth in km
+      //     const dLat = toRadians(lat2 - lat1);
+      //     const dLon = toRadians(lon2 - lon1);
+      //     const a =
+      //         Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      //         Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
+      //         Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      //     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      //     const distance = R * c; // Distance in km
+      //     return distance;
+      // }
 
-      function bruteForceTSP(coordinates) {
-          const n = coordinates.length;
-          let minPath = [];
-          let minDistance = Number.MAX_SAFE_INTEGER;
+      // function toRadians(degrees) {
+      //     return degrees * (Math.PI / 180);
+      // }
 
-          const permute = (a, size) => {
-              if (size === 1) {
-                  let distance = 0;
-                  for (let i = 0; i < n - 1; i++) {
-                      distance += calculateDistance(
-                          coordinates[a[i]][0], coordinates[a[i]][1],
-                          coordinates[a[i + 1]][0], coordinates[a[i + 1]][1]
-                      );
-                  }
-                  distance += calculateDistance(
-                      coordinates[a[n - 1]][0], coordinates[a[n - 1]][1],
-                      coordinates[a[0]][0], coordinates[a[0]][1]
-                  );
-                  if (distance < minDistance) {
-                      minDistance = distance;
-                      minPath = [...a];
-                  }
-              } else {
-                  for (let i = 0; i < size; i++) {
-                      permute(a, size - 1);
-                      if (size % 2 === 1) {
-                          const temp = a[i];
-                          a[i] = a[size - 1];
-                          a[size - 1] = temp;
-                      } else {
-                          const temp = a[0];
-                          a[0] = a[size - 1];
-                          a[size - 1] = temp;
-                      }
-                  }
-              }
-          };
+      // function bruteForceTSP(coordinates) {
+      //     const n = coordinates.length;
+      //     let minPath = [];
+      //     let minDistance = Number.MAX_SAFE_INTEGER;
 
-          const indexes = Array.from(Array(n).keys());
-          permute(indexes, n);
-          return minPath.map(index => coordinates[index]);
-      }
+      //     const permute = (a, size) => {
+      //         if (size === 1) {
+      //             let distance = 0;
+      //             for (let i = 0; i < n - 1; i++) {
+      //                 distance += calculateDistance(
+      //                     coordinates[a[i]][0], coordinates[a[i]][1],
+      //                     coordinates[a[i + 1]][0], coordinates[a[i + 1]][1]
+      //                 );
+      //             }
+      //             distance += calculateDistance(
+      //                 coordinates[a[n - 1]][0], coordinates[a[n - 1]][1],
+      //                 coordinates[a[0]][0], coordinates[a[0]][1]
+      //             );
+      //             if (distance < minDistance) {
+      //                 minDistance = distance;
+      //                 minPath = [...a];
+      //             }
+      //         } else {
+      //             for (let i = 0; i < size; i++) {
+      //                 permute(a, size - 1);
+      //                 if (size % 2 === 1) {
+      //                     const temp = a[i];
+      //                     a[i] = a[size - 1];
+      //                     a[size - 1] = temp;
+      //                 } else {
+      //                     const temp = a[0];
+      //                     a[0] = a[size - 1];
+      //                     a[size - 1] = temp;
+      //                 }
+      //             }
+      //         }
+      //     };
 
-      const shortestPath = bruteForceTSP(coordinates);
-      console.log("Shortest path:", shortestPath);
+      //     const indexes = Array.from(Array(n).keys());
+      //     permute(indexes, n);
+      //     return minPath.map(index => coordinates[index]);
+      // }
+
+      // const shortestPath = bruteForceTSP(coordinates);
+      // console.log("Shortest path:", shortestPath);
+const vichel = await Vichel.findOne({deviceId:req.params.id})
+      // Return sorted data and shortest path
       res.status(200).json({
-          vichel,
-          shortestPath
+          vichel
       });
 
   } catch (error) {
-
+      // Error handling
       res.status(500).json({
           error: error.message
       });
