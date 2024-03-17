@@ -8,9 +8,11 @@ export const Auth = createSlice({
     name:"HackHive",
     initialState,
     reducers:{
-
+getSearchSuccess:(state,action)=>{
+    state.searchData = action.payload.vichel.data
+}
     }
 });
 
-export const  {} = Auth.actions;
+export const  {getSearchSuccess} = Auth.actions;
 export default Auth.reducer;

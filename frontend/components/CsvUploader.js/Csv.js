@@ -30,7 +30,7 @@ function CSVUploader() {
 
   return (
     <div>
-      <form onSubmit={handleFileUpload}>
+      <form onSubmit={handleFileUpload} className="flex flex-col gap-2">
         <input
           type="file"
           accept=".csv"
